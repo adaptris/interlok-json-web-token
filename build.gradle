@@ -138,7 +138,7 @@ dependencies {
 
   compile 'io.jsonwebtoken:jjwt-api:0.11.2'
   runtime 'io.jsonwebtoken:jjwt-impl:0.11.2'
-  runtime 'org.bouncycastle:bcprov-jdk15on:1.60'
+  runtime 'org.bouncycastle:bcprov-jdk15on:1.66'
   runtime 'io.jsonwebtoken:jjwt-jackson:0.11.2'
 
   annotationProcessor ("com.adaptris:interlok-core-apt:$interlokCoreVersion") {changing= true}
