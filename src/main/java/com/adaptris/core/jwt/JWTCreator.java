@@ -33,27 +33,28 @@ public class JWTCreator extends ServiceImp
   @Setter
   @Valid
   @AdvancedConfig(rare = true)
+  @InputFieldHint(expression = true)
   private String id;
 
   @Getter
   @Setter
   @NotNull
   @Valid
-  @InputFieldHint(expression=true)
+  @InputFieldHint(expression = true)
   private String issuer;
 
   @Getter
   @Setter
   @NotNull
   @Valid
-  @InputFieldHint(expression=true)
+  @InputFieldHint(expression = true)
   private String subject;
 
   @Getter
   @Setter
   @NotNull
   @Valid
-  @InputFieldHint(expression=true)
+  @InputFieldHint(expression = true)
   private String audience;
 
   @Getter
@@ -78,13 +79,14 @@ public class JWTCreator extends ServiceImp
   @Setter
   @NotNull
   @Valid
-  @InputFieldHint(expression=true)
+  @InputFieldHint(expression = true)
   private String secret;
 
   @Getter
   @Setter
   @Valid
   @AdvancedConfig
+  @InputFieldHint(expression = true)
   private KeyValuePairSet customClaims;
 
   /**
@@ -113,7 +115,7 @@ public class JWTCreator extends ServiceImp
     {
       for (KeyValuePair claim : customClaims)
       {
-        builder.claim(claim.getKey(), claim.getValue());
+        builder.claim(claim.getKey(), message.resolve(claim.getValue()));
       }
     }
 

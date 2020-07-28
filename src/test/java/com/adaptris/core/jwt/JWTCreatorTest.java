@@ -1,6 +1,8 @@
 package com.adaptris.core.jwt;
 
 import com.adaptris.core.AdaptrisMessage;
+import com.adaptris.core.DefaultAdaptrisMessageImp;
+import com.adaptris.core.DefaultMessageFactory;
 import com.adaptris.core.common.ConstantDataInputParameter;
 import com.adaptris.core.common.MetadataDataOutputParameter;
 import com.adaptris.core.common.StringPayloadDataInputParameter;
@@ -42,9 +44,11 @@ public class JWTCreatorTest extends JWTCommonTest
     KeyValuePairSet claims = new KeyValuePairSet();
     claims.addKeyValuePair(new KeyValuePair("custom-claim-1", "value-1"));
     claims.addKeyValuePair(new KeyValuePair("custom-claim-2", "value-2"));
+    claims.addKeyValuePair(new KeyValuePair("custom-claim-3", "%message{%payload}"));
     service.setCustomClaims(claims);
 
     AdaptrisMessage message = message();
+    message.setContent("resolved value", message.getContentEncoding());
 
     service.doService(message);
 
@@ -67,6 +71,7 @@ public class JWTCreatorTest extends JWTCommonTest
     assertTrue(json.has(Claims.ID));
     assertEquals("value-1", json.getString("custom-claim-1"));
     assertEquals("value-2", json.getString("custom-claim-2"));
+    assertEquals("resolved value", json.getString("custom-claim-3"));
   }
 
   @SneakyThrows
