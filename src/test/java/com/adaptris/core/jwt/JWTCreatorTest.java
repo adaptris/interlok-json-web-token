@@ -1,8 +1,6 @@
 package com.adaptris.core.jwt;
 
 import com.adaptris.core.AdaptrisMessage;
-import com.adaptris.core.DefaultAdaptrisMessageImp;
-import com.adaptris.core.DefaultMessageFactory;
 import com.adaptris.core.common.ConstantDataInputParameter;
 import com.adaptris.core.common.MetadataDataOutputParameter;
 import com.adaptris.core.common.StringPayloadDataInputParameter;
