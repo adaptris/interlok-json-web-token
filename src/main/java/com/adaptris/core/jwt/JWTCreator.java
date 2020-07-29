@@ -8,13 +8,12 @@ import com.adaptris.annotation.InputFieldHint;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.ServiceException;
 import com.adaptris.core.ServiceImp;
+import com.adaptris.core.jwt.secrets.SecretConfigurator;
 import com.adaptris.util.KeyValuePair;
 import com.adaptris.util.KeyValuePairSet;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -75,12 +74,11 @@ public class JWTCreator extends ServiceImp
   @Valid
   private Date notBefore;
 
-  @Getter
-  @Setter
   @NotNull
   @Valid
-  @InputFieldHint(expression = true)
-  private String secret;
+  @Getter
+  @Setter
+  private SecretConfigurator secret;
 
   @Getter
   @Setter
@@ -98,28 +96,36 @@ public class JWTCreator extends ServiceImp
    * @throws ServiceException wrapping any underlying <code>Exception</code>s
    */
   @Override
-  public void doService(AdaptrisMessage message)
+  public void doService(AdaptrisMessage message) throws ServiceException
   {
-    JwtBuilder builder = Jwts.builder()
-        .setSubject(message.resolve(subject))
-        .setAudience(message.resolve(audience))
-        .setNotBefore(notBefore)
-        .setIssuer(message.resolve(issuer))
-        .setExpiration(expiration)
-        .setIssuedAt(issuedAt != null ? issuedAt : new Date())
-        .setId(id != null ? id : UUID.randomUUID().toString())
-
-        .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(message.resolve(secret))));
-
-    if (customClaims != null)
+    try
     {
-      for (KeyValuePair claim : customClaims)
-      {
-        builder.claim(claim.getKey(), message.resolve(claim.getValue()));
-      }
-    }
+      JwtBuilder builder = Jwts.builder()
+              .setSubject(message.resolve(subject))
+              .setAudience(message.resolve(audience))
+              .setNotBefore(notBefore)
+              .setIssuer(message.resolve(issuer))
+              .setExpiration(expiration)
+              .setIssuedAt(issuedAt != null ? issuedAt : new Date())
+              .setId(id != null ? id : UUID.randomUUID().toString());
 
-    message.setContent(builder.compact(), message.getContentEncoding());
+      builder = secret.configure(builder);
+
+      if (customClaims != null)
+      {
+        for (KeyValuePair claim : customClaims)
+        {
+          builder.claim(claim.getKey(), message.resolve(claim.getValue()));
+        }
+      }
+
+      message.setContent(builder.compact(), message.getContentEncoding());
+    }
+    catch (Exception e)
+    {
+      log.error("Could not create JSON Web Token", e);
+      throw new ServiceException(e);
+    }
   }
 
   /**

@@ -1,33 +1,25 @@
 package com.adaptris.core.jwt;
 
 import com.adaptris.annotation.AdapterComponent;
-import com.adaptris.annotation.AdvancedConfig;
 import com.adaptris.annotation.ComponentProfile;
 import com.adaptris.annotation.DisplayOrder;
-import com.adaptris.annotation.InputFieldDefault;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.ServiceException;
 import com.adaptris.core.ServiceImp;
+import com.adaptris.core.jwt.secrets.SecretConfigurator;
 import com.adaptris.interlok.config.DataInputParameter;
 import com.adaptris.interlok.config.DataOutputParameter;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import io.jsonwebtoken.JwsHeader;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.io.Encoders;
-import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.BooleanUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.security.InvalidParameterException;
-import java.security.Key;
 
 /**
  * This service provides a way to encode data as a JSON Web Token.
@@ -71,20 +63,7 @@ public class JWTEncoder extends ServiceImp
   @Valid
   @Getter
   @Setter
-  private DataInputParameter<String> secret;
-
-  @Valid
-  @AdvancedConfig
-  @InputFieldDefault(value = "false")
-  @Getter
-  @Setter
-  private Boolean generateKey;
-
-  @Valid
-  @AdvancedConfig
-  @Getter
-  @Setter
-  private DataOutputParameter<String> keyOutput;
+  private SecretConfigurator secret;
 
   @NotNull
   @Valid
@@ -103,24 +82,10 @@ public class JWTEncoder extends ServiceImp
       // might as well ensure we've got valid JSON
       JSONObject head = new JSONObject(header.extract(message));
       JSONObject body = new JSONObject(claims.extract(message));
-      String key = secret.extract(message);
 
-      Key k;
-      if (generateKey())
-      {
-        k = Keys.secretKeyFor(SignatureAlgorithm.forName(head.getString(JwsHeader.ALGORITHM)));
-        if (keyOutput == null)
-        {
-          throw new InvalidParameterException("Key Output cannot be NULL");
-        }
-        keyOutput.insert(Encoders.BASE64.encode(k.getEncoded()), message);
-      }
-      else
-      {
-        k = Keys.hmacShaKeyFor(Decoders.BASE64.decode(key));
-      }
-
-      String jwt = Jwts.builder().setClaims(body.toMap()).setHeader(head.toMap()).signWith(k).compact();
+      JwtBuilder builder = Jwts.builder().setClaims(body.toMap()).setHeader(head.toMap());
+      builder = secret.configure(builder);
+      String jwt = builder.compact();
 
       jwtOutput.insert(jwt, message);
     }
@@ -129,11 +94,6 @@ public class JWTEncoder extends ServiceImp
       log.error("An error occurred during JWT encoding", e);
       throw new ServiceException(e);
     }
-  }
-
-  private boolean generateKey()
-  {
-    return BooleanUtils.toBooleanDefaultIfNull(generateKey, false);
   }
 
   /**

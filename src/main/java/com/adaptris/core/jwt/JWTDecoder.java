@@ -6,14 +6,14 @@ import com.adaptris.annotation.DisplayOrder;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.ServiceException;
 import com.adaptris.core.ServiceImp;
+import com.adaptris.core.jwt.secrets.SecretConfigurator;
 import com.adaptris.interlok.config.DataInputParameter;
 import com.adaptris.interlok.config.DataOutputParameter;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.security.Key;
 
 /**
  * This service provides a way to decode a JSON Web Token.
@@ -60,7 +59,7 @@ public class JWTDecoder extends ServiceImp
   @Valid
   @Getter
   @Setter
-  private DataInputParameter<String> secret;
+  private SecretConfigurator secret;
 
   @NotNull
   @Valid
@@ -82,12 +81,11 @@ public class JWTDecoder extends ServiceImp
   {
     try
     {
-      String key = secret.extract(message);
       String jwt = jwtString.extract(message);
 
-      Key k = Keys.hmacShaKeyFor(Decoders.BASE64.decode(key));
-
-      Jws<Claims> jws = Jwts.parserBuilder().setSigningKey(k).build().parseClaimsJws(jwt);
+      JwtParserBuilder builder = Jwts.parserBuilder();
+      builder = secret.configure(builder);
+      Jws<Claims> jws = builder.build().parseClaimsJws(jwt);
 
       JSONObject head = new JSONObject(jws.getHeader());
       header.insert(head.toString(), message);

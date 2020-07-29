@@ -5,6 +5,8 @@ import com.adaptris.core.ServiceException;
 import com.adaptris.core.common.ConstantDataInputParameter;
 import com.adaptris.core.common.MetadataDataOutputParameter;
 import com.adaptris.core.common.StringPayloadDataOutputParameter;
+import com.adaptris.core.jwt.secrets.Base64EncodedSecret;
+import com.adaptris.core.jwt.secrets.PGPSecret;
 import org.json.JSONObject;
 import org.junit.Test;
 
@@ -32,7 +34,9 @@ public class JWTDecoderTest extends JWTCommonTest
     try
     {
       JWTDecoder service = (JWTDecoder)retrieveObjectForSampleConfig();
-      service.setSecret(new ConstantDataInputParameter("invalid key"));
+      PGPSecret secret = getPGPSecret();
+      secret.setPath(wrongKey);
+      service.setSecret(secret);
       AdaptrisMessage message = message();
 
       service.doService(message);
@@ -50,7 +54,9 @@ public class JWTDecoderTest extends JWTCommonTest
   {
     JWTDecoder decoder = new JWTDecoder();
     decoder.setJwtString(new ConstantDataInputParameter(JWT));
-    decoder.setSecret(new ConstantDataInputParameter(KEY));
+    Base64EncodedSecret secret = new Base64EncodedSecret();
+    secret.setSecret(KEY);
+    decoder.setSecret(secret);
     decoder.setHeader(new MetadataDataOutputParameter("header"));
     decoder.setClaims(new StringPayloadDataOutputParameter());
     return decoder;

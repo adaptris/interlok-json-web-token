@@ -1,10 +1,12 @@
 package com.adaptris.core.jwt;
 
 import com.adaptris.core.AdaptrisMessage;
-import com.adaptris.core.common.ConstantDataInputParameter;
+import com.adaptris.core.ServiceException;
 import com.adaptris.core.common.MetadataDataOutputParameter;
 import com.adaptris.core.common.StringPayloadDataInputParameter;
 import com.adaptris.core.common.StringPayloadDataOutputParameter;
+import com.adaptris.core.jwt.secrets.Base64EncodedSecret;
+import com.adaptris.core.jwt.secrets.PGPSecret;
 import com.adaptris.util.KeyValuePair;
 import com.adaptris.util.KeyValuePairSet;
 import io.jsonwebtoken.Claims;
@@ -16,6 +18,7 @@ import java.text.SimpleDateFormat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class JWTCreatorTest extends JWTCommonTest
 {
@@ -27,6 +30,10 @@ public class JWTCreatorTest extends JWTCommonTest
     JWTCreator service = (JWTCreator)retrieveObjectForSampleConfig();
     service.setId("4f044322-5db3-44d2-a698-15b754bd7a05");
     service.setIssuedAt(PARSER.parse("2020-01-01"));
+    Base64EncodedSecret secret = new Base64EncodedSecret();
+    secret.setSecret(KEY);
+    service.setSecret(secret);
+
     AdaptrisMessage message = message();
 
     service.doService(message);
@@ -52,7 +59,7 @@ public class JWTCreatorTest extends JWTCommonTest
 
     JWTDecoder decoder = new JWTDecoder();
     decoder.setJwtString(new StringPayloadDataInputParameter());
-    decoder.setSecret(new ConstantDataInputParameter(KEY));
+    decoder.setSecret(getPGPSecret());
     decoder.setHeader(new MetadataDataOutputParameter("header"));
     decoder.setClaims(new StringPayloadDataOutputParameter());
 
@@ -72,6 +79,28 @@ public class JWTCreatorTest extends JWTCommonTest
     assertEquals("resolved value", json.getString("custom-claim-3"));
   }
 
+  @Test
+  public void testException()
+  {
+    try
+    {
+      JWTCreator service = (JWTCreator)retrieveObjectForSampleConfig();
+      PGPSecret secret = getPGPSecret();
+      secret.setPath(wrongKey);
+      service.setSecret(secret);
+
+      AdaptrisMessage message = message();
+
+      service.doService(message);
+
+      fail();
+    }
+    catch (ServiceException e)
+    {
+      /* expected */
+    }
+  }
+
   @SneakyThrows
   @Override
   protected Object retrieveObjectForSampleConfig()
@@ -82,7 +111,8 @@ public class JWTCreatorTest extends JWTCommonTest
     creator.setAudience("you");
     creator.setExpiration(PARSER.parse("2040-12-31"));
     creator.setNotBefore(PARSER.parse("2020-01-01"));
-    creator.setSecret(KEY);
+    creator.setSecret(getPGPSecret());
     return creator;
   }
+
 }
