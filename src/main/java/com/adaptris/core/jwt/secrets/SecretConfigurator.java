@@ -5,9 +5,9 @@ import io.jsonwebtoken.JwtParserBuilder;
 
 public interface SecretConfigurator
 {
-	String PROVIDER = "BC";
+  String PROVIDER = "BC";
 
-	JwtBuilder configure(JwtBuilder builder) throws InvalidSecretException;
+  JwtBuilder configure(JwtBuilder builder) throws InvalidSecretException;
 
-	JwtParserBuilder configure(JwtParserBuilder builder) throws InvalidSecretException;
+  JwtParserBuilder configure(JwtParserBuilder builder) throws InvalidSecretException;
 }

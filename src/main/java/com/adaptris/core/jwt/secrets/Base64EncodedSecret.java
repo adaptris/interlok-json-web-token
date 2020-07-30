@@ -13,20 +13,20 @@ import javax.validation.constraints.NotBlank;
 @XStreamAlias("base64-encoded-secret")
 public class Base64EncodedSecret implements SecretConfigurator
 {
-	@Getter
-	@Setter
-	@NotBlank
-	private String secret;
+  @Getter
+  @Setter
+  @NotBlank
+  private String secret;
 
-	@Override
-	public JwtBuilder configure(JwtBuilder builder)
-	{
-		return builder.signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)));
-	}
+  @Override
+  public JwtBuilder configure(JwtBuilder builder)
+  {
+    return builder.signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)));
+  }
 
-	@Override
-	public JwtParserBuilder configure(JwtParserBuilder builder)
-	{
-		return builder.setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)));
-	}
+  @Override
+  public JwtParserBuilder configure(JwtParserBuilder builder)
+  {
+    return builder.setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)));
+  }
 }

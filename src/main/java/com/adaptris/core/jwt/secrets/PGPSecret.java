@@ -33,88 +33,88 @@ import java.security.PublicKey;
 @XStreamAlias("pgp-secret")
 public class PGPSecret implements SecretConfigurator
 {
-	@Getter
-	@Setter
-	@NotBlank
-	private String path;
+  @Getter
+  @Setter
+  @NotBlank
+  private String path;
 
-	@Getter
-	@Setter
-	@NotBlank
-	private String password;
+  @Getter
+  @Setter
+  @NotBlank
+  private String password;
 
-	@Override
-	public JwtBuilder configure(JwtBuilder builder) throws InvalidSecretException
-	{
-		try
-		{
-			PGPSecretKey pgpSecretKey = readSecretKey();
-			String keyId = Long.toString(pgpSecretKey.getKeyID());
-			Key key = decodePrivateKey(pgpSecretKey);
-			builder.setHeaderParam(JwsHeader.KEY_ID, keyId);
-			builder.signWith(key);
-			return builder;
-		}
-		catch (Exception e)
-		{
-			throw new InvalidSecretException(e);
-		}
-	}
+  @Override
+  public JwtBuilder configure(JwtBuilder builder) throws InvalidSecretException
+  {
+    try
+    {
+      PGPSecretKey pgpSecretKey = readSecretKey();
+      String keyId = Long.toString(pgpSecretKey.getKeyID());
+      Key key = decodePrivateKey(pgpSecretKey);
+      builder.setHeaderParam(JwsHeader.KEY_ID, keyId);
+      builder.signWith(key);
+      return builder;
+    }
+    catch (Exception e)
+    {
+      throw new InvalidSecretException(e);
+    }
+  }
 
-	@Override
-	public JwtParserBuilder configure(JwtParserBuilder builder) throws InvalidSecretException
-	{
-		try
-		{
-			PGPSecretKey pgpSecretKey = readSecretKey();
-			Key key = decodePublicKey(pgpSecretKey);
-			return builder.setSigningKey(key);
-		}
-		catch (Exception e)
-		{
-			throw new InvalidSecretException(e);
-		}
-	}
+  @Override
+  public JwtParserBuilder configure(JwtParserBuilder builder) throws InvalidSecretException
+  {
+    try
+    {
+      PGPSecretKey pgpSecretKey = readSecretKey();
+      Key key = decodePublicKey(pgpSecretKey);
+      return builder.setSigningKey(key);
+    }
+    catch (Exception e)
+    {
+      throw new InvalidSecretException(e);
+    }
+  }
 
-	private PrivateKey decodePrivateKey(PGPSecretKey pgpSecretKey) throws PasswordException, PGPException
-	{
-		String p = Password.decode(ExternalResolver.resolve(password));
-		PBESecretKeyDecryptor decryptorFactory = new JcePBESecretKeyDecryptorBuilder().setProvider(PROVIDER).build(p.toCharArray());
-		PGPPrivateKey pgpPrivateKey = pgpSecretKey.extractPrivateKey(decryptorFactory);
-		JcaPGPKeyConverter converter = new JcaPGPKeyConverter();
-		converter.setProvider(new BouncyCastleProvider());
-		return converter.getPrivateKey(pgpPrivateKey);
-	}
+  private PrivateKey decodePrivateKey(PGPSecretKey pgpSecretKey) throws PasswordException, PGPException
+  {
+    String p = Password.decode(ExternalResolver.resolve(password));
+    PBESecretKeyDecryptor decryptorFactory = new JcePBESecretKeyDecryptorBuilder().setProvider(PROVIDER).build(p.toCharArray());
+    PGPPrivateKey pgpPrivateKey = pgpSecretKey.extractPrivateKey(decryptorFactory);
+    JcaPGPKeyConverter converter = new JcaPGPKeyConverter();
+    converter.setProvider(new BouncyCastleProvider());
+    return converter.getPrivateKey(pgpPrivateKey);
+  }
 
-	private PublicKey decodePublicKey(PGPSecretKey pgpSecretKey) throws PGPException
-	{
-		PGPPublicKey pgpPublicKey = pgpSecretKey.getPublicKey();
-		JcaPGPKeyConverter converter = new JcaPGPKeyConverter();
-		converter.setProvider(new BouncyCastleProvider());
-		return converter.getPublicKey(pgpPublicKey);
-	}
+  private PublicKey decodePublicKey(PGPSecretKey pgpSecretKey) throws PGPException
+  {
+    PGPPublicKey pgpPublicKey = pgpSecretKey.getPublicKey();
+    JcaPGPKeyConverter converter = new JcaPGPKeyConverter();
+    converter.setProvider(new BouncyCastleProvider());
+    return converter.getPublicKey(pgpPublicKey);
+  }
 
-	private PGPSecretKey readSecretKey() throws IOException, PGPException
-	{
-		try (InputStream inputStream = new FileInputStream(new File(path)))
-		{
-			PGPSecretKeyRingCollection pgpSec = new PGPSecretKeyRingCollection(inputStream, new JcaKeyFingerprintCalculator());
-			/*
-			 * we just loop through the collection till we find a key
-			 * suitable for signing, in the real world you would
-			 * probably want to be a bit smarter about this.
-			 */
-			for (PGPSecretKeyRing secretKeyRing : pgpSec)
-			{
-				for (PGPSecretKey secretKey : secretKeyRing)
-				{
-					if (secretKey.isSigningKey())
-					{
-						return secretKey;
-					}
-				}
-			}
-			throw new IllegalArgumentException("Cannot find signing key in key ring");
-		}
-	}
+  private PGPSecretKey readSecretKey() throws IOException, PGPException
+  {
+    try (InputStream inputStream = new FileInputStream(new File(path)))
+    {
+      PGPSecretKeyRingCollection pgpSec = new PGPSecretKeyRingCollection(inputStream, new JcaKeyFingerprintCalculator());
+      /*
+       * we just loop through the collection till we find a key
+       * suitable for signing, in the real world you would
+       * probably want to be a bit smarter about this.
+       */
+      for (PGPSecretKeyRing secretKeyRing : pgpSec)
+      {
+        for (PGPSecretKey secretKey : secretKeyRing)
+        {
+          if (secretKey.isSigningKey())
+          {
+            return secretKey;
+          }
+        }
+      }
+      throw new IllegalArgumentException("Cannot find signing key in key ring");
+    }
+  }
 }
