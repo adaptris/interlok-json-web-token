@@ -33,6 +33,7 @@ ext {
   slf4jVersion = '1.7.30'
   bouncyCastleVersion='1.66'
   jwtVersion = "0.11.2"
+  jacksonDatabindVersion = "2.11.1"
 }
 
 ext.testResourcesDir = { ->
@@ -140,8 +141,8 @@ dependencies {
 
   compile "io.jsonwebtoken:jjwt-api:$jwtVersion"
   runtime "io.jsonwebtoken:jjwt-impl:$jwtVersion"
-  runtime "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
   runtime "io.jsonwebtoken:jjwt-jackson:$jwtVersion"
+  runtime "com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion"
 
   annotationProcessor ("com.adaptris:interlok-core-apt:$interlokCoreVersion") {changing= true}
   umlDoclet("nl.talsmasoftware:umldoclet:1.1.4")
