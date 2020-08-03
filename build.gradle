@@ -33,7 +33,7 @@ ext {
   slf4jVersion = '1.7.30'
   bouncyCastleVersion='1.66'
   jwtVersion = "0.11.2"
-  jacksonDatabindVersion = "2.11.1"
+  jacksonDatabindVersion = "2.11.2"
 }
 
 ext.testResourcesDir = { ->
