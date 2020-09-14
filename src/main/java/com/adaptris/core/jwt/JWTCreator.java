@@ -22,6 +22,32 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * This service provides a way to create a JSON Web Token from the given data.
+ *
+ * <pre>{@code
+ *    <jwt-creator>
+ *      <unique-id>jwt-create</unique-id>
+ *      <issuer>ashley</issuer>
+ *      <subject>test</subject>
+ *      <audience>everyone</audience>
+ *      <expiration>2040-12-31 00:00:00.0 UTC</expiration>
+ *      <not-before>2020-01-01 00:00:00.0 UTC</not-before>
+ *      <secret class="base64-encoded-secret">
+ *        <secret>c64975ba3cf3f9cd58459710b0a42369f34b0759c9967fb5a47eea488e8bea79</secret>
+ *      </secret>
+ *      <custom-claims>
+ *        <key-value-pair>
+ *          <key>payload</key>
+ *          <value>%message{%payload}</value>
+ *        </key-value-pair>
+ *      </custom-claims>
+ *    </jwt-creator>
+ * }</pre>
+ *
+ * @author aanderson
+ * @config jwt-create
+ */
 @XStreamAlias("jwt-creator")
 @AdapterComponent
 @ComponentProfile(summary = "Create a JSON Web Token", tag = "jwt,create,json,web,token", since="3.11.1")
