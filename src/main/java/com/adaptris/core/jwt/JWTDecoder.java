@@ -27,15 +27,19 @@ import javax.validation.constraints.NotNull;
  * This service provides a way to decode a JSON Web Token.
  *
  * <pre>{@code
- *    <jwt-encode>
- *        <unique-id>mad-lalande</unique-id>
- *        <secret class="constant-data-input-parameter">
- *            <value>base64 encoded secret</value>
- *        </secret>
- *        <jwt-string class="string-payload-input-parameter"/>  <!-- The Base64 encoded JWT string -->
- *        <header class="string-payload-output-parameter"/>     <!-- The JSON header -->
- *        <claims class="string-payload-output-parameter"/>     <!-- The JSON message body -->
- *    </jwt-encode>
+ *    <jwt-decode>
+ *      <unique-id>jwt-decode</unique-id>
+ *      <jwt-string class="string-payload-data-input-parameter"/>
+ *      <secret class="base64-encoded-secret">
+ *        <secret>c64975ba3cf3f9cd58459710b0a42369f34b0759c9967fb5a47eea488e8bea79</secret>
+ *      </secret>
+ *      <header class="multi-payload-string-output-parameter">
+ *        <payload-id>header</payload-id>
+ *      </header>
+ *      <claims class="multi-payload-string-output-parameter">
+ *        <payload-id>claims</payload-id>
+ *      </claims>
+ *    </jwt-decode>
  * }</pre>
  *
  * @author aanderson

@@ -26,13 +26,19 @@ import javax.validation.constraints.NotNull;
  *
  * <pre>{@code
  *    <jwt-encode>
- *        <unique-id>mad-lalande</unique-id>
- *        <secret class="constant-data-input-parameter">
- *            <value>base64 encoded secret</value>
- *        </secret>
- *        <header class="string-payload-input-parameter"/>      <!-- The JSON header -->
- *        <claims class="string-payload-input-parameter"/>      <!-- The JSON message body -->
- *        <jwt-output class="string-payload-output-parameter"/> <!-- The base64 encoded JWT string -->
+ *      <unique-id>jwt-encode</unique-id>
+ *      <header class="multi-payload-string-input-parameter">
+ *        <payload-id>header</payload-id>
+ *      </header>
+ *      <claims class="multi-payload-string-input-parameter">
+ *        <payload-id>claims</payload-id>
+ *      </claims>
+ *      <secret class="base64-encoded-secret">
+ *        <secret>c64975ba3cf3f9cd58459710b0a42369f34b0759c9967fb5a47eea488e8bea79</secret>
+ *      </secret>
+ *      <jwt-output class="multi-payload-string-output-parameter">
+ *        <payload-id>output</payload-id>
+ *      </jwt-output>
  *    </jwt-encode>
  * }</pre>
  *
